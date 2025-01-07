@@ -24,9 +24,18 @@ public class UserService {
     public void addNewUser(User user){
         Optional <User> userOptional = userRepository.findUserByEmail(user.getEmail());
         if (userOptional.isPresent()) {
-            throw new IllegalStateException("email is already taken");
+            throw new IllegalStateException("user already exists, email is already taken");
         }
         userRepository.save(user);
+    }
+
+    public boolean isAuthenticated(String username, String password) {
+        User user = userRepository.findUserByUsername(username).
+                orElseThrow(() -> new IllegalStateException("username " + username + " not found in system, try registering first"));
+        if (!password.equals(user.getPassword())){
+            return false;
+        }
+        return true;
     }
 
     public void deleteUser(Long userId) {
