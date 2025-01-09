@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping(path="/users")
 public class UserController {
     private final UserService userService;
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     public UserController(UserService userService){
@@ -32,6 +34,8 @@ public class UserController {
     public ResponseEntity<String> registerNewUser(@RequestBody User user) {
         Logger logger = Logger.getLogger(UserController.class.getName());
         try {
+            String hashedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(hashedPassword);
             userService.addNewUser(user);
             return ResponseEntity.ok("User has been successfully added");
         } catch (Exception e) {
@@ -43,25 +47,17 @@ public class UserController {
     // for logging in
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        Logger logger = Logger.getLogger(UserController.class.getName());
-
+    public ResponseEntity<String> login(@RequestBody UserDto userDto) {
         try {
-            // Validate credentials (you'll need to implement this logic in userService)
-            boolean isAuthenticated = userService.isAuthenticated(user.getUsername(), user.getPassword());
-
-            if (isAuthenticated) {
-                // Optionally, you can return a token here (JWT or session-based token)
-                return ResponseEntity.ok("Login successful!");
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid credentials");
+            User user = userService.findUserByUsername(userDto.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("Invalid credentials"));
+            if (!passwordEncoder.matches(userDto.getPassword(), user.getPassword())){
+                throw new IllegalStateException("Password does not match, try again.");
             }
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error logging in user ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Could not log in user: " + e.getMessage());
+            return ResponseEntity.ok("Successfully logged in");
+        } catch(Exception e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid username or password");
         }
     }
 

@@ -38,6 +38,11 @@ public class UserService {
         return true;
     }
 
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.findUserByUsername(username); // Calls the repo method
+    }
+
+
     public void deleteUser(Long userId) {
         boolean userExists = userRepository.existsById(userId);
         if (!userExists) {
