@@ -38,23 +38,16 @@ public class UserService {
         System.out.println("User saved: " + user);
     }
 
-
     // Authenticate user by checking password
     public boolean authenticateUser(String username, String password) {
-        // Find user by username
         Optional<User> userOptional = userRepository.findUserByUsername(username);
         if (userOptional.isEmpty()) {
-            return false;  // User not found
+            return false;
         }
-
         User user = userOptional.get();
-
-        // Match the entered password with the stored hashed password
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-
-    // Delete a user by ID
     public void deleteUser(Long userId) {
         boolean userExists = userRepository.existsById(userId);
         if (!userExists) {
@@ -63,7 +56,6 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    // Update user details (username and email)
     @Transactional
     public void updateUser(Long userId, String username, String email) {
         User userToUpdate = userRepository.findById(userId)

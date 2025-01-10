@@ -34,13 +34,8 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> registerNewUser(@RequestBody User user) {
         try {
-            System.out.println("Received user registration request: " + user);
-
-            // Hash the password
             String hashedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(hashedPassword);
-
-            // Call the service to add the user
             userService.addNewUser(user);
 
             return ResponseEntity.ok("User has been successfully added");
@@ -53,11 +48,7 @@ public class UserController {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
     public String login(@RequestParam String username, @RequestParam String password) {
-        // Print debug information before calling the service
-        System.out.println("Received login attempt: username = " + username + ", password = " + password);
-
         boolean isAuthenticated = userService.authenticateUser(username, password);
-
         if (isAuthenticated) {
             return "Login successful!";
         } else {
