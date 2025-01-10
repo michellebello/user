@@ -1,6 +1,8 @@
-package com.example.user.user;
+package com.example.user.user.user;
 
 import jakarta.persistence.*;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "\"user\"")
